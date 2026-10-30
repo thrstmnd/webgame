@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ТРАКТ — оборона убежища</title>
+  <meta name="description" content="Браузерная игра в жанре tower defense: разводи тварей по веткам дороги стрелками на развилках.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230b0c0e'/><rect x='8' y='14' width='16' height='4' fill='%23c9a227'/><rect x='18' y='10' width='4' height='12' fill='%23c9a227'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ==================== ЗАСТАВКА ====================
+       Нужна не только для вида: браузер не включает звук,
+       пока человек ничего не сделал на странице. Первое
+       нажатие здесь и будит звук. -->
+  <div class="splash" id="splash">
+    <div class="splash__box">
+      <p class="splash__title">ТРАКТ</p>
+      <p class="splash__sub">оборона убежища</p>
+      <p class="splash__hint">нажмите любую кнопку</p>
+    </div>
+  </div>
+
+  <!-- ==================== МЕНЮ ==================== -->
+  <div class="menu" id="menu">
+    <div class="menu__box">
+
+      <p class="menu__title">ТРАКТ</p>
+
+      <!-- главный экран -->
+      <div class="menu__screen" id="screen-main">
+        <nav class="menu__nav">
+          <button class="mbtn" id="menu-continue" type="button" hidden>продолжить</button>
+          <button class="mbtn mbtn--main" id="menu-levels" type="button">новая игра</button>
+          <button class="mbtn" id="menu-settings" type="button">настройки</button>
+          <button class="mbtn" id="menu-help" type="button">обучение</button>
+        </nav>
+        <div class="recs" id="menu-records"></div>
+      </div>
+
+      <!-- выбор уровня -->
+      <div class="menu__screen" id="screen-levels" hidden>
+        <p class="menu__label">уровень</p>
+        <div class="levels" id="levels"></div>
+        <button class="mbtn" id="levels-back" type="button">назад</button>
+      </div>
+
+      <!-- настройки -->
+      <div class="menu__screen" id="screen-settings" hidden>
+        <p class="menu__label">сложность</p>
+        <div class="diffs" id="diffs">
+          <button class="diff" data-diff="easy" type="button">
+            <b>тихая ночь</b><span>больше денег и жизней, твари слабее</span>
+          </button>
+          <button class="diff on" data-diff="normal" type="button">
+            <b>тракт</b><span>как задумано</span>
+          </button>
+          <button class="diff" data-diff="hard" type="button">
+            <b>глухая чаща</b><span>мало денег, твари быстрые и живучие</span>
+          </button>
+        </div>
+
+        <p class="menu__label">звук</p>
+        <button class="mbtn" id="set-sound" type="button">звук</button>
+
+        <p class="menu__label">данные</p>
+        <button class="mbtn mbtn--bad" id="menu-wipe" type="button">стереть прогресс и рекорды</button>
+
+        <button class="mbtn" id="settings-back" type="button">назад</button>
+      </div>
+
+      <!-- обучение -->
+      <div class="menu__screen" id="screen-help" hidden>
+        <p class="menu__label">как играть</p>
+        <ul class="help">
+          <li>Ставь башни на свободные площадки. Выбор — кнопками внизу или клавишами <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd>.</li>
+          <li><b>У башен есть боезапас.</b> Отстрелялись — несколько секунд молчат и перезаряжаются. Полоска над башней показывает остаток. Между волнами магазины набиваются сами.</li>
+          <li><b>Морозник</b> не ранит и не перезаряжается — он держит поток на месте, пока работают остальные. <b>Костёр</b> поджигает: огонь держится и после выхода из круга.</li>
+          <li><b>Главное в игре.</b> Дорога ветвится, на развилках стоят жёлтые стрелки. Пока одна ветка перезаряжается, щёлкни по стрелке и уводи поток в другую. Одна ветка плотную волну не вытянет.</li>
+          <li>Площадки разведены по веткам: башня на гребне не достаёт до низины. Строить надо с обеих сторон.</li>
+          <li>Стрелка действует только на тех, кто ещё не дошёл до развилки. Свернувших не вернуть.</li>
+          <li><b>Летунов</b> достаёт только стрелок — они летят по прямой и дороги не видят.</li>
+          <li><b>Панцирь</b> срезает часть каждого попадания: нужна пушка, мелкие выстрелы бесполезны. <b>Рой</b> распадается на троих. <b>Плакальщица</b> лечит соседей. <b>Вожак</b> не подчиняется стрелкам.</li>
+          <li>Из убитых падают осколки — щёлкни, пока не погасли.</li>
+          <li>На четвёртом уровне башня предлагает выбрать одну из двух веток развития. Обратно не поменять.</li>
+          <li><kbd>␣</kbd> — пауза, <kbd>R</kbd> — заново, <kbd>Esc</kbd> — меню. Прогресс сохраняется после каждой волны.</li>
+        </ul>
+        <button class="mbtn" id="help-back" type="button">назад</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== РАЗБОР ПЕРЕД УРОВНЕМ ====================
+       Новая тварь без объяснения выглядит как несправедливость,
+       поэтому перед каждым уровнем показываем, кто появится. -->
+  <div class="brief" id="brief">
+    <div class="brief__box">
+      <p class="brief__k" id="brief-k">уровень 1</p>
+      <p class="brief__title" id="brief-title">Первая ночь</p>
+
+      <div class="brief__list" id="brief-new"></div>
+
+      <div class="brief__boss" id="brief-boss" hidden>
+        <p class="menu__label">в конце уровня</p>
+        <div class="brief__list" id="brief-boss-list"></div>
+      </div>
+
+      <button class="mbtn mbtn--main" id="brief-go" type="button">начать</button>
+      <button class="mbtn" id="brief-back" type="button">назад в меню</button>
+    </div>
+  </div>
+
+  <!-- ==================== ИГРА ==================== -->
+  <div class="wrap">
+
+    <header class="top">
+      <h1>ТРАКТ</h1>
+      <p class="sub">из тумана идут к убежищу · разводи их стрелками по веткам</p>
+    </header>
+
+    <section class="hud" aria-label="Показатели">
+      <div class="hud__cell"><span class="hud__k">деньги</span><b id="hud-money">0</b></div>
+      <div class="hud__cell"><span class="hud__k">жизни</span><b id="hud-lives">0</b></div>
+      <div class="hud__cell hud__cell--wide"><span class="hud__k">уровень</span><b id="hud-level">1</b></div>
+      <div class="hud__cell"><span class="hud__k">волна</span><b id="hud-wave">0 / 12</b></div>
+      <div class="hud__cell"><span class="hud__k">счёт</span><b id="hud-score">0</b></div>
+      <div class="hud__cell"><span class="hud__k">рекорд</span><b id="hud-record">0</b></div>
+      <div class="hud__cell hud__cell--wide">
+        <span class="hud__k">состояние</span><b id="hud-state">меню</b>
+      </div>
+    </section>
+
+    <div class="stage">
+      <canvas id="screen" width="384" height="224" aria-label="Игровое поле"></canvas>
+
+      <!-- итог партии и пауза: обычная разметка поверх холста,
+           чтобы текст не растягивался вместе с пикселями -->
+      <div class="result" id="result">
+        <div class="result__box">
+          <p class="result__title" id="res-title">ПАУЗА</p>
+          <p class="result__sub" id="res-sub"></p>
+          <div class="result__acts">
+            <button class="btn btn--main" id="res-resume" type="button">продолжить</button>
+            <button class="btn btn--main" id="res-next" type="button" hidden>следующий уровень</button>
+            <button class="btn btn--main" id="res-again" type="button" hidden>ещё раз</button>
+            <button class="btn" id="res-menu" type="button">в меню</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- развилки продублированы кнопками: то же, что щелчок по
+         стрелке на поле, но попасть проще, особенно с телефона -->
+    <section class="forks" aria-label="Развилки">
+      <button class="fork" data-sw="0" type="button">
+        <span class="fork__k">первая развилка</span><b id="fk-0">гребень</b>
+      </button>
+      <button class="fork" data-sw="1" type="button">
+        <span class="fork__k">вторая развилка</span><b id="fk-1">верхом</b>
+      </button>
+    </section>
+
+    <p class="msg" id="hud-msg"></p>
+
+    <section class="bar" aria-label="Управление">
+      <div class="picks">
+        <button class="pick on" data-kind="archer" type="button">
+          <span class="pick__n">стрелок</span>
+          <span class="pick__c">40</span>
+          <span class="pick__h">часто · достаёт летунов</span>
+          <kbd>1</kbd>
+        </button>
+        <button class="pick" data-kind="fire" type="button">
+          <span class="pick__n">костёр</span>
+          <span class="pick__c">55</span>
+          <span class="pick__h">жжёт всех вокруг</span>
+          <kbd>2</kbd>
+        </button>
+        <button class="pick" data-kind="cannon" type="button">
+          <span class="pick__n">пушка</span>
+          <span class="pick__c">70</span>
+          <span class="pick__h">редко, по площади</span>
+          <kbd>3</kbd>
+        </button>
+        <button class="pick" data-kind="frost" type="button">
+          <span class="pick__n">морозник</span>
+          <span class="pick__c">45</span>
+          <span class="pick__h">замедляет всех рядом</span>
+          <kbd>4</kbd>
+        </button>
+      </div>
+
+      <div class="acts">
+        <button class="btn" id="btn-skip" type="button">вызвать волну</button>
+        <button class="btn" id="btn-pause" type="button">пауза <kbd>␣</kbd></button>
+        <button class="btn" id="btn-menu" type="button">меню <kbd>Esc</kbd></button>
+        <button class="btn" id="btn-sound" type="button">звук</button>
+      </div>
+    </section>
+
+    <!-- панель выбранной башни -->
+    <section class="tower" id="tower-panel" hidden aria-label="Выбранная башня">
+      <div class="tower__info">
+        <b id="tp-name">—</b>
+        <span id="tp-hint" class="tower__hint">—</span>
+      </div>
+      <div class="tower__stats">
+        <span>урон <b id="tp-dmg">0</b></span>
+        <span>радиус <b id="tp-range">0</b></span>
+        <span>магазин <b id="tp-ammo">0</b></span>
+      </div>
+      <div class="tower__acts">
+        <button class="btn" id="tp-up" type="button">улучшить</button>
+        <button class="btn btn--bad" id="tp-sell" type="button">снести</button>
+      </div>
+    </section>
+
+    <!-- выбор специализации на четвёртом уровне -->
+    <section class="specs" id="tp-specs" hidden aria-label="Выбор специализации">
+      <p class="specs__k">четвёртый уровень · выбрать можно только раз</p>
+      <div class="specs__row">
+        <button class="spec" id="tp-spec-a" type="button">
+          <b></b><span class="spec__d"></span><span class="spec__c"></span>
+        </button>
+        <button class="spec" id="tp-spec-b" type="button">
+          <b></b><span class="spec__d"></span><span class="spec__c"></span>
+        </button>
+      </div>
+    </section>
+
+  </div>
+
+  <script src="js/sfx.js"></script>
+  <script src="js/sprites.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/levels.js"></script>
+  <script src="js/entities.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>

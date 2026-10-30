@@ -1,0 +1,370 @@
+/* =========================================================
+   ТРАКТ — оформление
+   Тёмная страница вокруг пиксельного холста.
+   Холст рисуется в маленьком разрешении и растягивается без
+   сглаживания — поэтому пиксели остаются квадратными.
+   ========================================================= */
+
+:root {
+  --bg:      #08090b;
+  --panel:   #101316;
+  --panel-2: #161a1f;
+  --line:    #222831;
+  --ink:     #d8dde0;
+  --ink-2:   #8b9298;
+  --ink-3:   #585f66;
+  --gold:    #c9a227;
+  --fire:    #d98020;
+  --blood:   #8e2b2b;
+  --mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.55;
+  padding: 18px 14px 40px;
+  display: flex;
+  justify-content: center;
+}
+
+ul { list-style: none; }
+button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+kbd {
+  font-family: inherit; font-size: 10px;
+  border: 1px solid var(--line); border-radius: 3px;
+  padding: 0 4px; color: var(--ink-3);
+}
+
+.wrap { width: 100%; max-width: 1060px; }
+
+/* ---------- шапка ---------- */
+.top { text-align: center; margin-bottom: 14px; }
+.top h1 { font-size: 26px; letter-spacing: .4em; font-weight: 700; }
+.sub { color: var(--ink-3); font-size: 12px; margin-top: 2px; }
+
+/* ---------- показатели ---------- */
+.hud {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.hud__cell {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  padding: 6px 10px;
+  display: flex; flex-direction: column; gap: 1px;
+  min-width: 0;
+}
+.hud__k {
+  font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3);
+}
+.hud__cell b { font-size: 17px; color: var(--gold); font-weight: 700; }
+.hud__cell--wide b { font-size: 12px; color: var(--ink); font-weight: 400; }
+
+/* вспышка, когда не хватает денег */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); color: var(--gold); }
+  25% { transform: translateX(-3px); color: var(--blood); }
+  75% { transform: translateX(3px); color: var(--blood); }
+}
+#hud-money.flash { animation: shake .3s ease; }
+
+/* ---------- холст ---------- */
+.stage {
+  position: relative;
+  border: 1px solid var(--line);
+  background: #000;
+  line-height: 0;
+}
+
+#screen {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* без этого браузер сгладит пиксели и вся затея рассыплется */
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  cursor: crosshair;
+}
+
+.msg { min-height: 20px; color: var(--gold); font-size: 12px; padding: 4px 2px; }
+
+/* ---------- панель управления ---------- */
+.bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+}
+.picks { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+
+.pick {
+  position: relative;
+  display: grid; gap: 1px;
+  text-align: left;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  padding: 8px 10px;
+  transition: border-color .15s, background .15s;
+}
+.pick:hover { border-color: var(--ink-3); }
+.pick.on { border-color: var(--gold); background: var(--panel-2); }
+.pick.poor { opacity: .5; }
+.pick__n { font-weight: 700; }
+.pick__c { position: absolute; right: 9px; top: 7px; color: var(--gold); font-size: 12px; }
+.pick__h { font-size: 10.5px; color: var(--ink-3); padding-right: 22px; }
+.pick kbd { position: absolute; right: 9px; bottom: 7px; }
+
+.acts { display: grid; gap: 6px; }
+.btn {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  padding: 8px 14px;
+  font-size: 12px;
+  white-space: nowrap;
+  transition: border-color .15s, color .15s;
+}
+.btn:hover { border-color: var(--gold); color: var(--gold); }
+.btn--main { border-color: var(--gold); color: var(--gold); }
+.btn--main:hover { background: var(--gold); color: #0b0c0e; }
+.btn--bad:hover { border-color: var(--blood); color: var(--blood); }
+.btn.poor { opacity: .45; }
+
+/* ---------- итог партии и пауза ----------
+   Отдельный слой разметки поверх холста. Текст здесь обычный,
+   поэтому не растягивается вместе с пикселями и читается чётко. */
+.result {
+  position: absolute;
+  inset: 0;
+  display: none;
+  place-items: center;
+  line-height: 1.55;
+  padding: 16px;
+}
+.result.open { display: grid; }
+
+.result__box { text-align: center; max-width: 340px; width: 100%; }
+.result__title {
+  font-size: 30px; font-weight: 700; letter-spacing: .22em;
+  color: var(--gold); margin-bottom: 4px;
+}
+.result__title.bad { color: var(--blood); }
+.result__sub { font-size: 12px; color: var(--ink-2); margin-bottom: 16px; }
+.result__acts { display: grid; gap: 5px; }
+
+/* ---------- заставка и полноэкранное меню ----------
+   Оба слоя накрывают всё окно, а не только холст. */
+.splash, .menu {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: none;
+  place-items: center;
+  background: var(--bg);
+  padding: 20px;
+  overflow: auto;
+}
+.splash.open, .menu.open { display: grid; }
+
+.splash { cursor: pointer; }
+.splash__box { text-align: center; }
+.splash__title {
+  font-size: clamp(34px, 9vw, 64px); font-weight: 700;
+  letter-spacing: .45em; color: var(--ink); margin-left: .45em;
+}
+.splash__sub { font-size: 12px; letter-spacing: .3em; text-transform: uppercase; color: var(--ink-3); margin-top: 4px; }
+.splash__hint {
+  margin-top: 40px; font-size: 13px; color: var(--gold);
+  animation: blink 1.6s steps(2, start) infinite;
+}
+@keyframes blink { 0%, 60% { opacity: 1; } 61%, 100% { opacity: .15; } }
+
+.menu__box { width: 100%; max-width: 440px; }
+.menu__title {
+  font-size: 30px; font-weight: 700; letter-spacing: .4em;
+  color: var(--ink); text-align: center; margin-bottom: 22px; margin-left: .4em;
+}
+.menu__label {
+  font-size: 9.5px; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--ink-3); margin: 14px 0 6px;
+}
+.menu__label:first-child { margin-top: 0; }
+.menu__nav { display: grid; gap: 6px; }
+
+/* крупные кнопки меню */
+.mbtn {
+  display: block; width: 100%;
+  background: var(--panel); border: 1px solid var(--line);
+  padding: 13px 16px; font-size: 14px; letter-spacing: .06em;
+  text-align: left; cursor: pointer;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.mbtn:hover { border-color: var(--gold); color: var(--gold); }
+.mbtn--main { border-color: var(--gold); color: var(--gold); }
+.mbtn--main:hover { background: var(--gold); color: #0b0c0e; }
+.mbtn--bad:hover { border-color: var(--blood); color: var(--blood); }
+
+.diffs { display: grid; gap: 5px; }
+.diff {
+  display: grid; gap: 1px; text-align: left;
+  background: var(--panel); border: 1px solid var(--line);
+  padding: 8px 12px;
+  transition: border-color .15s, background .15s;
+}
+.diff:hover { border-color: var(--ink-3); }
+.diff.on { border-color: var(--gold); background: var(--panel-2); }
+.diff b { font-size: 13px; }
+.diff span { font-size: 10.5px; color: var(--ink-3); }
+
+.recs { margin-top: 20px; }
+.rec {
+  display: flex; justify-content: space-between; gap: 10px;
+  font-size: 11.5px; color: var(--ink-2);
+  padding: 4px 0; border-bottom: 1px solid var(--line);
+}
+.rec b { color: var(--gold); font-weight: 400; }
+
+.help { display: grid; gap: 7px; margin-bottom: 16px; }
+.help li {
+  position: relative; padding-left: 14px; font-size: 12px; color: var(--ink-2);
+}
+.help li::before { content: '·'; position: absolute; left: 4px; color: var(--gold); }
+.help b { color: var(--ink); }
+
+/* ---------- выбор уровня ---------- */
+.levels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; margin-bottom: 12px; }
+.lvl {
+  position: relative; display: grid; gap: 1px; text-align: left;
+  background: var(--panel); border: 1px solid var(--line);
+  padding: 8px 11px; cursor: pointer;
+  transition: border-color .15s, color .15s;
+}
+.lvl:hover:not(.lock) { border-color: var(--gold); }
+.lvl b { font-size: 12.5px; }
+.lvl span { font-size: 10px; color: var(--ink-3); }
+.lvl .num { position: absolute; right: 10px; top: 7px; color: var(--gold); font-size: 11px; }
+.lvl.lock { opacity: .4; cursor: default; }
+.lvl.lock .num { color: var(--ink-3); }
+
+/* ---------- разбор перед уровнем ---------- */
+.brief {
+  position: fixed; inset: 0; z-index: 45;
+  display: none; place-items: center;
+  background: var(--bg); padding: 20px; overflow: auto;
+}
+.brief.open { display: grid; }
+.brief__box { width: 100%; max-width: 480px; }
+.brief__k {
+  font-size: 9.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--ink-3);
+}
+.brief__title {
+  font-size: 24px; font-weight: 700; letter-spacing: .1em;
+  color: var(--gold); margin-bottom: 16px;
+}
+.brief__list { display: grid; gap: 6px; margin-bottom: 14px; }
+.foe {
+  display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 10px; align-items: center;
+  background: var(--panel); border: 1px solid var(--line); padding: 8px 11px;
+}
+.foe canvas {
+  width: 100%; height: auto; image-rendering: pixelated; image-rendering: crisp-edges;
+}
+.foe__n { font-size: 13px; font-weight: 700; }
+.foe__d { font-size: 10.5px; color: var(--ink-3); }
+.foe--boss { border-color: var(--blood); }
+.foe--boss .foe__n { color: var(--blood); }
+.brief__boss[hidden] { display: none; }
+
+/* ---------- панель развилок ---------- */
+.forks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-top: 6px; }
+.fork {
+  display: grid; gap: 1px; text-align: left;
+  background: var(--panel); border: 1px solid var(--gold);
+  padding: 7px 12px; cursor: pointer;
+  transition: background .15s;
+}
+.fork:hover { background: var(--panel-2); }
+.fork__k {
+  font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3);
+}
+.fork b { font-size: 14px; color: var(--gold); }
+
+/* ---------- выбор специализации ---------- */
+.specs {
+  margin-top: 6px;
+  background: var(--panel);
+  border: 1px solid var(--gold);
+  padding: 8px 12px;
+}
+.specs[hidden] { display: none; }
+.specs__k {
+  font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--ink-3); margin-bottom: 6px;
+}
+.specs__row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.spec {
+  position: relative; display: grid; gap: 1px; text-align: left;
+  background: var(--panel-2); border: 1px solid var(--line);
+  padding: 7px 11px;
+  transition: border-color .15s, color .15s;
+}
+.spec:hover { border-color: var(--gold); }
+.spec b { font-size: 13px; }
+.spec__d { font-size: 10.5px; color: var(--ink-3); padding-right: 34px; }
+.spec__c { position: absolute; right: 10px; top: 7px; color: var(--gold); font-size: 12px; }
+.spec.poor { opacity: .45; }
+
+/* ---------- панель выбранной башни ---------- */
+.tower {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 12px;
+  align-items: center;
+  margin-top: 8px;
+  background: var(--panel);
+  border: 1px solid var(--gold);
+  padding: 8px 12px;
+}
+/* без этой строки панель не прячется: правило display: grid выше
+   перебивает встроенное поведение атрибута hidden */
+.tower[hidden] { display: none; }
+
+.tower__info { display: grid; gap: 1px; min-width: 0; }
+.tower__hint { font-size: 10.5px; color: var(--ink-3); }
+.tower__stats { display: flex; gap: 14px; flex-wrap: wrap; font-size: 11px; color: var(--ink-2); }
+.tower__stats b { color: var(--ink); }
+.tower__acts { display: flex; gap: 6px; }
+
+/* =========================================================
+   АДАПТИВ
+   ========================================================= */
+@media (max-width: 760px) {
+  .hud { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .hud__cell--wide { grid-column: span 3; }
+  .hud__cell--wide b { font-size: 13px; }
+  .bar { grid-template-columns: 1fr; }
+  .acts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .tower { grid-template-columns: 1fr; gap: 8px; }
+}
+
+@media (max-width: 520px) {
+  body { padding: 12px 8px 30px; font-size: 12px; }
+  .top h1 { font-size: 20px; letter-spacing: .3em; }
+  .hud { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hud__cell--wide { grid-column: span 2; }
+  .picks { grid-template-columns: 1fr; }
+  .forks { grid-template-columns: 1fr; }
+  .levels { grid-template-columns: 1fr; }
+  .pick__h { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
